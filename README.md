@@ -16,24 +16,26 @@ Este proyecto integra consumo de una API REST pública (PokeAPI) con almacenamie
 
 ## Arquitectura
 
+```
 ApiDEX/
-├── app/ # Vistas y navegación (Expo Router)
-│ ├── \_layout.tsx # Layout raiz, envuelve la app en PokedexProvider
-│ ├── (tabs)/
-│ │ ├── \_layout.tsx # Navegacion por tabs
-│ │ ├── index.tsx # Pantalla Pokedex (lista)
-│ │ └── favorites.tsx # Pantalla de favoritos
-│ └── pokemon/
-│ └── [id].tsx # Pantalla de detalle
+├── app/                          # Vistas y navegación (Expo Router)
+│   ├── _layout.tsx               # Layout raiz, envuelve la app en PokedexProvider
+│   ├── (tabs)/
+│   │   ├── _layout.tsx           # Navegacion por tabs
+│   │   ├── index.tsx             # Pantalla Pokedex (lista)
+│   │   └── favorites.tsx         # Pantalla de favoritos
+│   └── pokemon/
+│       └── [id].tsx              # Pantalla de detalle
 ├── src/
-│ ├── api/
-│ │ └── pokeapi.ts # Logica de red (fetch a PokeAPI)
-│ ├── storage/
-│ │ └── favoritesStorage.ts # Logica de AsyncStorage
-│ ├── context/
-│ │ └── PokedexContext.tsx # Estado global: une red + almacenamiento
-│ └── types/
-│ └── pokemon.ts # Interfaces TypeScript compartidas
+│   ├── api/
+│   │   └── pokeapi.ts            # Logica de red (fetch a PokeAPI)
+│   ├── storage/
+│   │   └── favoritesStorage.ts   # Logica de AsyncStorage
+│   ├── context/
+│   │   └── PokedexContext.tsx    # Estado global: une red + almacenamiento
+│   └── types/
+│       └── pokemon.ts            # Interfaces TypeScript compartidas
+```
 
 Principio de separación: las vistas dentro de `app/` nunca llaman a `fetch` ni a `AsyncStorage` directamente. Siempre pasan por `src/api`, `src/storage`, o por el hook `usePokedex()` que expone el Context.
 
@@ -58,5 +60,6 @@ Escanea el QR con la app Expo Go (Android/iOS), presiona `a` para abrir en un em
 
 ## Decisiones técnicas
 
+- El proyecto se creó originalmente con Expo SDK 54, pero se actualizó a SDK 57 porque la versión de Expo Go instalada en los dispositivos de prueba ya no soportaba SDK 54 (Expo Go solo admite la última versión de SDK publicada).
 - Se usó AsyncStorage en vez de SQLite: es suficiente para el volumen de datos de favoritos y más simple de mantener.
 - Se guarda el objeto completo del Pokémon favorito (no solo el id) para que la pantalla de Favoritos no dependa de una nueva petición de red.
