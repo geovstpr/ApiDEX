@@ -1,50 +1,62 @@
-# Welcome to your Expo app 👋
+# ApiDEX
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Pokédex construida con React Native (Expo) que consume la PokeAPI en tiempo real y permite guardar Pokémon como favoritos con persistencia local en el dispositivo.
 
-## Get started
+## Descripción
 
-1. Install dependencies
+Este proyecto integra consumo de una API REST pública (PokeAPI) con almacenamiento local de preferencias del usuario (favoritos), separando claramente la lógica de red, la lógica de base de datos local y las vistas.
 
-   ```bash
-   npm install
-   ```
+## Tecnologías
 
-2. Start the app
+- Expo SDK 57 + TypeScript
+- Expo Router (navegación basada en archivos)
+- Context API (estado global)
+- AsyncStorage (persistencia local)
+- PokeAPI (https://pokeapi.co)
 
-   ```bash
-   npx expo start
-   ```
+## Arquitectura
 
-In the output, you'll find options to open the app in a
+ApiDEX/
+├── app/ # Vistas y navegación (Expo Router)
+│ ├── \_layout.tsx # Layout raiz, envuelve la app en PokedexProvider
+│ ├── (tabs)/
+│ │ ├── \_layout.tsx # Navegacion por tabs
+│ │ ├── index.tsx # Pantalla Pokedex (lista)
+│ │ └── favorites.tsx # Pantalla de favoritos
+│ └── pokemon/
+│ └── [id].tsx # Pantalla de detalle
+├── src/
+│ ├── api/
+│ │ └── pokeapi.ts # Logica de red (fetch a PokeAPI)
+│ ├── storage/
+│ │ └── favoritesStorage.ts # Logica de AsyncStorage
+│ ├── context/
+│ │ └── PokedexContext.tsx # Estado global: une red + almacenamiento
+│ └── types/
+│ └── pokemon.ts # Interfaces TypeScript compartidas
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Principio de separación: las vistas dentro de `app/` nunca llaman a `fetch` ni a `AsyncStorage` directamente. Siempre pasan por `src/api`, `src/storage`, o por el hook `usePokedex()` que expone el Context.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Funcionalidades
 
-## Get a fresh project
+- Listado de Pokémon con scroll infinito (paginación vía PokeAPI)
+- Pantalla de detalle con imagen, tipos y estadísticas
+- Guardar y eliminar Pokémon de favoritos, persistidos localmente con AsyncStorage
+- Pantalla de Favoritos independiente de la red
+- Manejo de estados de carga y error en cada pantalla, con opción de reintentar
 
-When you're ready, run:
+## Cómo correr el proyecto
 
 ```bash
-npm run reset-project
+git clone <url-de-tu-repo>
+cd ApiDEX
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Escanea el QR con la app Expo Go (Android/iOS), presiona `a` para abrir en un emulador Android, o `w` para abrirlo en el navegador. Requiere una versión de Expo Go compatible con SDK 57.
 
-## Learn more
+## Decisiones técnicas
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Se usó AsyncStorage en vez de SQLite: es suficiente para el volumen de datos de favoritos y más simple de mantener.
+- Se guarda el objeto completo del Pokémon favorito (no solo el id) para que la pantalla de Favoritos no dependa de una nueva petición de red.
