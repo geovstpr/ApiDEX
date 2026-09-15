@@ -1,3 +1,4 @@
+
 export interface PokemonListItem {
   name: string;
   url: string;
@@ -31,4 +32,15 @@ export interface PokemonDetail {
     base_stat: number;
     stat: { name: string };
   }[];
+}
+
+export interface PokemonTypeResponse {
+  pokemon: {
+    pokemon: PokemonListItem;
+    slot: number;
+  }[];
+}
+
+export interface GenerationResponse {
+  pokemon_species: PokemonListItem[];
 }

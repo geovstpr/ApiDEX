@@ -1,4 +1,10 @@
-import { PokemonDetail, PokemonListResponse } from "../types/pokemon";
+import {
+  GenerationResponse,
+  PokemonDetail,
+  PokemonListItem,
+  PokemonListResponse,
+  PokemonTypeResponse,
+} from "../types/pokemon";
 
 const BASE_URL = "https://pokeapi.co/api/v2";
 
@@ -34,4 +40,30 @@ export async function fetchPokemonDetail(
 export function getIdFromUrl(url: string): number {
   const segments = url.split("/").filter(Boolean); // quita strings vacíos
   return Number(segments[segments.length - 1]);
+}
+
+export async function fetchPokemonByType(
+  typeName: string,
+): Promise<PokemonListItem[]> {
+  const response = await fetch(`${BASE_URL}/type/${typeName}`);
+  if (!response.ok) {
+    throw new Error(
+      `Error al obtener el tipo "${typeName}" (${response.status})`,
+    );
+  }
+  const data: PokemonTypeResponse = await response.json();
+  return data.pokemon.map((entry) => entry.pokemon);
+}
+
+export async function fetchPokemonByGeneration(
+  generationName: string,
+): Promise<PokemonListItem[]> {
+  const response = await fetch(`${BASE_URL}/generation/${generationName}`);
+  if (!response.ok) {
+    throw new Error(
+      `Error al obtener la generación "${generationName}" (${response.status})`,
+    );
+  }
+  const data: GenerationResponse = await response.json();
+  return data.pokemon_species;
 }
