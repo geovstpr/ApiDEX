@@ -30,3 +30,8 @@ export async function fetchPokemonDetail(
 
   return response.json();
 }
+
+export function getIdFromUrl(url: string): number {
+  const segments = url.split("/").filter(Boolean); // quita strings vacíos
+  return Number(segments[segments.length - 1]);
+}

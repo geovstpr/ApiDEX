@@ -4,6 +4,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import { fetchPokemonList } from "../api/pokeapi";
@@ -39,13 +40,20 @@ export function PokedexProvider({ children }: { children: ReactNode }) {
   const [favorites, setFavorites] = useState<PokemonDetail[]>([]);
   const [isLoadingFavorites, setIsLoadingFavorites] = useState(true);
 
-  // loadMore sigue igual, para usarla después desde un botón "Cargar más"
+  const isFetchingRef = useRef(false);
+
   const loadMore = useCallback(async () => {
+    if (isFetchingRef.current) return; // ya hay una petición en curso, ignorar
+    isFetchingRef.current = true;
     setIsLoadingList(true);
     setListError(null);
     try {
       const data = await fetchPokemonList(PAGE_SIZE, offset);
-      setPokemonList((prev) => [...prev, ...data.results]);
+      setPokemonList((prev) => {
+        const existingNames = new Set(prev.map((p) => p.name));
+        const newItems = data.results.filter((p) => !existingNames.has(p.name));
+        return [...prev, ...newItems];
+      });
       setOffset((prev) => prev + PAGE_SIZE);
     } catch (err) {
       setListError(
@@ -55,6 +63,7 @@ export function PokedexProvider({ children }: { children: ReactNode }) {
       );
     } finally {
       setIsLoadingList(false);
+      isFetchingRef.current = false;
     }
   }, [offset]);
 
