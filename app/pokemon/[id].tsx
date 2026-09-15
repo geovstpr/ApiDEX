@@ -1,12 +1,13 @@
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
+    ActivityIndicator,
     Image,
     Pressable,
     ScrollView,
     StyleSheet,
     Text,
-    View
+    View,
 } from "react-native";
 import { fetchPokemonDetail } from "../../src/api/pokeapi";
 import { usePokedex } from "../../src/context/PokedexContext";
@@ -20,6 +21,7 @@ export default function PokemonDetailScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Para el boton "Reintentar" (se llama desde un onPress, no desde un efecto)
   const loadDetail = useCallback(async () => {
     if (!id) return;
     setIsLoading(true);
@@ -34,6 +36,7 @@ export default function PokemonDetailScreen() {
     }
   }, [id]);
 
+  // Carga inicial: no llama a loadDetail, no hay setState antes del await
   useEffect(() => {
     if (!id) return;
     (async () => {
@@ -48,11 +51,20 @@ export default function PokemonDetailScreen() {
     })();
   }, [id]);
 
+  if (isLoading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
+        <Text>Cargando Pokemon...</Text>
+      </View>
+    );
+  }
+
   if (error || !pokemon) {
     return (
       <View style={styles.center}>
         <Text style={styles.errorText}>
-          {error ?? "No se encontró el Pokémon"}
+          {error ?? "No se encontro el Pokemon"}
         </Text>
         <Pressable style={styles.retryButton} onPress={loadDetail}>
           <Text style={styles.retryText}>Reintentar</Text>
@@ -94,7 +106,7 @@ export default function PokemonDetailScreen() {
           <Text style={styles.infoText}>Peso: {pokemon.weight / 10} kg</Text>
         </View>
 
-        <Text style={styles.sectionTitle}>Estadísticas</Text>
+        <Text style={styles.sectionTitle}>Estadisticas</Text>
         {pokemon.stats.map((s) => (
           <View key={s.stat.name} style={styles.statRow}>
             <Text style={styles.statName}>{s.stat.name}</Text>
@@ -109,7 +121,7 @@ export default function PokemonDetailScreen() {
           }
         >
           <Text style={styles.favButtonText}>
-            {isFav ? "★ Quitar de favoritos" : "☆ Agregar a favoritos"}
+            {isFav ? "Quitar de favoritos" : "Agregar a favoritos"}
           </Text>
         </Pressable>
       </ScrollView>
