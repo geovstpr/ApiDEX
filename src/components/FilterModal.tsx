@@ -1,21 +1,23 @@
 import {
-    Modal,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import {
-    POKEMON_GENERATIONS,
-    POKEMON_TYPES,
+  POKEMON_GENERATIONS,
+  POKEMON_TYPES,
 } from "../constants/pokemonFilters";
+
+const MAX_TYPES = 2; // un Pokemon tiene maximo 2 tipos en el juego real
 
 interface FilterModalProps {
   visible: boolean;
-  selectedType: string | null;
+  selectedTypes: string[];
   selectedGeneration: string | null;
-  onSelectType: (type: string | null) => void;
+  onToggleType: (type: string) => void;
   onSelectGeneration: (generation: string | null) => void;
   onApply: () => void;
   onClear: () => void;
@@ -24,9 +26,9 @@ interface FilterModalProps {
 
 export function FilterModal({
   visible,
-  selectedType,
+  selectedTypes,
   selectedGeneration,
-  onSelectType,
+  onToggleType,
   onSelectGeneration,
   onApply,
   onClear,
@@ -44,29 +46,35 @@ export function FilterModal({
           <ScrollView showsVerticalScrollIndicator={false}>
             <Text style={styles.title}>Filtrar Pokemon</Text>
 
-            <Text style={styles.sectionLabel}>Tipo</Text>
+            <Text style={styles.sectionLabel}>Tipo (maximo {MAX_TYPES})</Text>
             <View style={styles.chipRow}>
-              {POKEMON_TYPES.map((t) => (
-                <Pressable
-                  key={t.apiName}
-                  style={[
-                    styles.chip,
-                    selectedType === t.apiName && styles.chipActive,
-                  ]}
-                  onPress={() =>
-                    onSelectType(selectedType === t.apiName ? null : t.apiName)
-                  }
-                >
-                  <Text
+              {POKEMON_TYPES.map((t) => {
+                const isSelected = selectedTypes.includes(t.apiName);
+                const isDisabled =
+                  !isSelected && selectedTypes.length >= MAX_TYPES;
+                return (
+                  <Pressable
+                    key={t.apiName}
+                    disabled={isDisabled}
                     style={[
-                      styles.chipText,
-                      selectedType === t.apiName && styles.chipTextActive,
+                      styles.chip,
+                      isSelected && styles.chipActive,
+                      isDisabled && styles.chipDisabled,
                     ]}
+                    onPress={() => onToggleType(t.apiName)}
                   >
-                    {t.label}
-                  </Text>
-                </Pressable>
-              ))}
+                    <Text
+                      style={[
+                        styles.chipText,
+                        isSelected && styles.chipTextActive,
+                        isDisabled && styles.chipTextDisabled,
+                      ]}
+                    >
+                      {t.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
 
             <Text style={styles.sectionLabel}>Generacion</Text>
@@ -144,8 +152,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   chipActive: { backgroundColor: "#3498db" },
+  chipDisabled: { opacity: 0.4 },
   chipText: { color: "#333", fontSize: 13 },
   chipTextActive: { color: "white", fontWeight: "600" },
+  chipTextDisabled: { color: "#999" },
   actionsRow: { flexDirection: "row", gap: 12, marginTop: 16 },
   clearButton: {
     flex: 1,

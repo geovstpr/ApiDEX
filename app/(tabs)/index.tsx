@@ -32,17 +32,25 @@ export default function PokedexScreen() {
   const router = useRouter();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [draftType, setDraftType] = useState<string | null>(null);
+  const [draftTypes, setDraftTypes] = useState<string[]>([]);
   const [draftGeneration, setDraftGeneration] = useState<string | null>(null);
 
   const openModal = () => {
-    setDraftType(activeFilters.type);
+    setDraftTypes(activeFilters.types);
     setDraftGeneration(activeFilters.generation);
     setIsModalVisible(true);
   };
 
+  const toggleDraftType = (type: string) => {
+    setDraftTypes((prev) => {
+      if (prev.includes(type)) return prev.filter((t) => t !== type);
+      if (prev.length >= 2) return prev; // ya hay 2 seleccionados, ignorar
+      return [...prev, type];
+    });
+  };
+
   const handleApply = () => {
-    applyFilters({ type: draftType, generation: draftGeneration });
+    applyFilters({ types: draftTypes, generation: draftGeneration });
     setIsModalVisible(false);
   };
 
@@ -56,13 +64,13 @@ export default function PokedexScreen() {
   const isLoadingDisplay = isFiltering ? isLoadingFilter : isLoadingList;
   const displayError = isFiltering ? filterError : listError;
 
-  const typeLabel = POKEMON_TYPES.find(
-    (t) => t.apiName === activeFilters.type,
-  )?.label;
+  const typeLabels = POKEMON_TYPES.filter((t) =>
+    activeFilters.types.includes(t.apiName),
+  ).map((t) => t.label);
   const generationLabel = POKEMON_GENERATIONS.find(
     (g) => g.apiName === activeFilters.generation,
   )?.label;
-  const filterSummary = [typeLabel, generationLabel]
+  const filterSummary = [...typeLabels, generationLabel]
     .filter(Boolean)
     .join(" + ");
 
@@ -135,9 +143,9 @@ export default function PokedexScreen() {
 
       <FilterModal
         visible={isModalVisible}
-        selectedType={draftType}
+        selectedTypes={draftTypes}
         selectedGeneration={draftGeneration}
-        onSelectType={setDraftType}
+        onToggleType={toggleDraftType}
         onSelectGeneration={setDraftGeneration}
         onApply={handleApply}
         onClear={handleClear}
