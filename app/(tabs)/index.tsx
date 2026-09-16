@@ -1,70 +1,178 @@
-import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    Pressable,
-    StyleSheet,
-    Text,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
 import { getIdFromUrl } from "../../src/api/pokeapi";
+import { FilterModal } from "../../src/components/FilterModal";
+import {
+  POKEMON_GENERATIONS,
+  POKEMON_TYPES,
+} from "../../src/constants/pokemonFilters";
 import { usePokedex } from "../../src/context/PokedexContext";
 
 export default function PokedexScreen() {
-  const { pokemonList, isLoadingList, listError, loadMore } = usePokedex();
+  const {
+    pokemonList,
+    isLoadingList,
+    listError,
+    loadMore,
+    activeFilters,
+    filteredList,
+    isLoadingFilter,
+    filterError,
+    applyFilters,
+    clearFilters,
+  } = usePokedex();
   const router = useRouter();
 
-  // Loading inicial (todavía no hay nada que mostrar)
-  if (isLoadingList && pokemonList.length === 0) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
-        <Text>Cargando Pokémon...</Text>
-      </View>
-    );
-  }
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [draftType, setDraftType] = useState<string | null>(null);
+  const [draftGeneration, setDraftGeneration] = useState<string | null>(null);
 
-  // Error en la carga inicial (todavía no hay nada que mostrar)
-  if (listError && pokemonList.length === 0) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}> {listError}</Text>
-        <Pressable style={styles.retryButton} onPress={loadMore}>
-          <Text style={styles.retryText}>Reintentar</Text>
-        </Pressable>
-      </View>
-    );
-  }
+  const openModal = () => {
+    setDraftType(activeFilters.type);
+    setDraftGeneration(activeFilters.generation);
+    setIsModalVisible(true);
+  };
+
+  const handleApply = () => {
+    applyFilters({ type: draftType, generation: draftGeneration });
+    setIsModalVisible(false);
+  };
+
+  const handleClear = () => {
+    clearFilters();
+    setIsModalVisible(false);
+  };
+
+  const isFiltering = filteredList !== null;
+  const displayList = isFiltering ? filteredList : pokemonList;
+  const isLoadingDisplay = isFiltering ? isLoadingFilter : isLoadingList;
+  const displayError = isFiltering ? filterError : listError;
+
+  const typeLabel = POKEMON_TYPES.find(
+    (t) => t.apiName === activeFilters.type,
+  )?.label;
+  const generationLabel = POKEMON_GENERATIONS.find(
+    (g) => g.apiName === activeFilters.generation,
+  )?.label;
+  const filterSummary = [typeLabel, generationLabel]
+    .filter(Boolean)
+    .join(" + ");
 
   return (
-    <FlatList
-      data={pokemonList}
-      keyExtractor={(item) => item.name}
-      contentContainerStyle={styles.list}
-      renderItem={({ item }) => {
-        const id = getIdFromUrl(item.url);
-        return (
-          <Pressable
-            style={styles.card}
-            onPress={() => router.push(`/pokemon/${id}` as Href)}
-          >
-            <Text style={styles.cardText}>
-              #{id} {item.name}
+    <View style={styles.screen}>
+      <View style={styles.filterBar}>
+        <Pressable style={styles.filterButton} onPress={openModal}>
+          <Text style={styles.filterButtonText}>
+            {isFiltering ? "Editar filtro" : "Filtrar"}
+          </Text>
+        </Pressable>
+        {isFiltering && (
+          <View style={styles.activeFilterInfo}>
+            <Text style={styles.activeFilterText} numberOfLines={1}>
+              {filterSummary}
             </Text>
+            <Pressable onPress={clearFilters}>
+              <Text style={styles.clearLink}>Limpiar</Text>
+            </Pressable>
+          </View>
+        )}
+      </View>
+
+      {isLoadingDisplay && displayList.length === 0 ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" />
+          <Text>Cargando Pokemon...</Text>
+        </View>
+      ) : displayError && displayList.length === 0 ? (
+        <View style={styles.center}>
+          <Text style={styles.errorText}>{displayError}</Text>
+          <Pressable
+            style={styles.retryButton}
+            onPress={isFiltering ? () => applyFilters(activeFilters) : loadMore}
+          >
+            <Text style={styles.retryText}>Reintentar</Text>
           </Pressable>
-        );
-      }}
-      onEndReached={loadMore}
-      onEndReachedThreshold={0.5}
-      ListFooterComponent={
-        isLoadingList ? <ActivityIndicator style={{ margin: 16 }} /> : null
-      }
-    />
+        </View>
+      ) : isFiltering && displayList.length === 0 ? (
+        <View style={styles.center}>
+          <Text>No hay Pokemon que coincidan con ese filtro.</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={displayList}
+          keyExtractor={(item) => item.name}
+          contentContainerStyle={styles.list}
+          renderItem={({ item }) => {
+            const id = getIdFromUrl(item.url);
+            return (
+              <Pressable
+                style={styles.card}
+                onPress={() => router.push(`/pokemon/${id}`)}
+              >
+                <Text style={styles.cardText}>
+                  #{id} {item.name}
+                </Text>
+              </Pressable>
+            );
+          }}
+          onEndReached={isFiltering ? undefined : loadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            !isFiltering && isLoadingList ? (
+              <ActivityIndicator style={{ margin: 16 }} />
+            ) : null
+          }
+        />
+      )}
+
+      <FilterModal
+        visible={isModalVisible}
+        selectedType={draftType}
+        selectedGeneration={draftGeneration}
+        onSelectType={setDraftType}
+        onSelectGeneration={setDraftGeneration}
+        onApply={handleApply}
+        onClear={handleClear}
+        onClose={() => setIsModalVisible(false)}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: { flex: 1 },
+  filterBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  filterButton: {
+    backgroundColor: "#3498db",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+  filterButtonText: { color: "white", fontWeight: "600" },
+  activeFilterInfo: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  activeFilterText: { flex: 1, color: "#333" },
+  clearLink: { color: "#c0392b", fontWeight: "600" },
   center: {
     flex: 1,
     justifyContent: "center",
