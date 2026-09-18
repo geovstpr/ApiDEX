@@ -10,8 +10,9 @@ import {
   POKEMON_GENERATIONS,
   POKEMON_TYPES,
 } from "../constants/pokemonFilters";
+import { colors, fonts } from "../constants/theme";
 
-const MAX_TYPES = 2; // un Pokemon tiene maximo 2 tipos en el juego real
+const MAX_TYPES = 2;
 
 interface FilterModalProps {
   visible: boolean;
@@ -44,9 +45,9 @@ export function FilterModal({
       <View style={styles.overlay}>
         <View style={styles.sheet}>
           <ScrollView showsVerticalScrollIndicator={false}>
-            <Text style={styles.title}>Filtrar Pokemon</Text>
+            <Text style={styles.title}>FILTRAR</Text>
 
-            <Text style={styles.sectionLabel}>Tipo (maximo {MAX_TYPES})</Text>
+            <Text style={styles.sectionLabel}>TIPO (MAX {MAX_TYPES})</Text>
             <View style={styles.chipRow}>
               {POKEMON_TYPES.map((t) => {
                 const isSelected = selectedTypes.includes(t.apiName);
@@ -77,7 +78,7 @@ export function FilterModal({
               })}
             </View>
 
-            <Text style={styles.sectionLabel}>Generacion</Text>
+            <Text style={styles.sectionLabel}>GENERACION</Text>
             <View style={styles.chipRow}>
               {POKEMON_GENERATIONS.map((g) => (
                 <Pressable
@@ -107,15 +108,15 @@ export function FilterModal({
 
           <View style={styles.actionsRow}>
             <Pressable style={styles.clearButton} onPress={onClear}>
-              <Text style={styles.clearButtonText}>Limpiar</Text>
+              <Text style={styles.clearButtonText}>LIMPIAR</Text>
             </Pressable>
             <Pressable style={styles.applyButton} onPress={onApply}>
-              <Text style={styles.applyButtonText}>Aplicar</Text>
+              <Text style={styles.applyButtonText}>APLICAR</Text>
             </Pressable>
           </View>
 
           <Pressable style={styles.closeButton} onPress={onClose}>
-            <Text style={styles.closeButtonText}>Cerrar</Text>
+            <Text style={styles.closeButtonText}>CERRAR</Text>
           </Pressable>
         </View>
       </View>
@@ -126,53 +127,73 @@ export function FilterModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(15,56,15,0.6)",
     justifyContent: "flex-end",
   },
   sheet: {
-    backgroundColor: "white",
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+    backgroundColor: colors.screenBg,
+    borderTopWidth: 4,
+    borderColor: colors.screenLine,
     padding: 20,
     maxHeight: "80%",
   },
-  title: { fontSize: 18, fontWeight: "700", marginBottom: 12 },
-  sectionLabel: {
+  title: {
+    fontFamily: fonts.pixel,
     fontSize: 14,
-    fontWeight: "600",
+    color: colors.screenLine,
+    marginBottom: 12,
+  },
+  sectionLabel: {
+    fontFamily: fonts.pixel,
+    fontSize: 9,
     marginTop: 12,
     marginBottom: 6,
-    color: "#555",
+    color: colors.screenLine,
   },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {
-    backgroundColor: "#f2f2f2",
+    backgroundColor: colors.white,
+    borderWidth: 2,
+    borderColor: colors.screenLine,
     paddingVertical: 8,
     paddingHorizontal: 14,
-    borderRadius: 16,
   },
-  chipActive: { backgroundColor: "#3498db" },
+  chipActive: { backgroundColor: colors.shellPurple },
   chipDisabled: { opacity: 0.4 },
-  chipText: { color: "#333", fontSize: 13 },
-  chipTextActive: { color: "white", fontWeight: "600" },
-  chipTextDisabled: { color: "#999" },
+  chipText: { color: colors.black, fontSize: 13 },
+  chipTextActive: { color: colors.white, fontWeight: "700" },
+  chipTextDisabled: { color: "#888" },
   actionsRow: { flexDirection: "row", gap: 12, marginTop: 16 },
   clearButton: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: "#eee",
+    backgroundColor: colors.white,
+    borderWidth: 2,
+    borderColor: colors.screenLine,
     alignItems: "center",
   },
-  clearButtonText: { fontWeight: "600", color: "#333" },
+  clearButtonText: {
+    fontFamily: fonts.pixel,
+    fontSize: 9,
+    color: colors.black,
+  },
   applyButton: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: "#3498db",
+    backgroundColor: colors.shellPurple,
+    borderWidth: 2,
+    borderColor: colors.screenLine,
     alignItems: "center",
   },
-  applyButtonText: { fontWeight: "700", color: "white" },
+  applyButtonText: {
+    fontFamily: fonts.pixel,
+    fontSize: 9,
+    color: colors.white,
+  },
   closeButton: { marginTop: 12, alignItems: "center" },
-  closeButtonText: { color: "#999" },
+  closeButtonText: {
+    fontFamily: fonts.pixel,
+    fontSize: 8,
+    color: colors.screenLine,
+  },
 });

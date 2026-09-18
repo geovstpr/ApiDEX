@@ -14,6 +14,7 @@ import {
   POKEMON_GENERATIONS,
   POKEMON_TYPES,
 } from "../../src/constants/pokemonFilters";
+import { colors, fonts } from "../../src/constants/theme";
 import { usePokedex } from "../../src/context/PokedexContext";
 
 export default function PokedexScreen() {
@@ -44,7 +45,7 @@ export default function PokedexScreen() {
   const toggleDraftType = (type: string) => {
     setDraftTypes((prev) => {
       if (prev.includes(type)) return prev.filter((t) => t !== type);
-      if (prev.length >= 2) return prev; // ya hay 2 seleccionados, ignorar
+      if (prev.length >= 2) return prev;
       return [...prev, type];
     });
   };
@@ -79,7 +80,7 @@ export default function PokedexScreen() {
       <View style={styles.filterBar}>
         <Pressable style={styles.filterButton} onPress={openModal}>
           <Text style={styles.filterButtonText}>
-            {isFiltering ? "Editar filtro" : "Filtrar"}
+            {isFiltering ? "EDITAR" : "FILTRAR"}
           </Text>
         </Pressable>
         {isFiltering && (
@@ -88,7 +89,7 @@ export default function PokedexScreen() {
               {filterSummary}
             </Text>
             <Pressable onPress={clearFilters}>
-              <Text style={styles.clearLink}>Limpiar</Text>
+              <Text style={styles.clearLink}>LIMPIAR</Text>
             </Pressable>
           </View>
         )}
@@ -96,8 +97,8 @@ export default function PokedexScreen() {
 
       {isLoadingDisplay && displayList.length === 0 ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" />
-          <Text>Cargando Pokemon...</Text>
+          <ActivityIndicator size="large" color={colors.screenLine} />
+          <Text style={styles.loadingText}>CARGANDO...</Text>
         </View>
       ) : displayError && displayList.length === 0 ? (
         <View style={styles.center}>
@@ -106,12 +107,14 @@ export default function PokedexScreen() {
             style={styles.retryButton}
             onPress={isFiltering ? () => applyFilters(activeFilters) : loadMore}
           >
-            <Text style={styles.retryText}>Reintentar</Text>
+            <Text style={styles.retryText}>REINTENTAR</Text>
           </Pressable>
         </View>
       ) : isFiltering && displayList.length === 0 ? (
         <View style={styles.center}>
-          <Text>No hay Pokemon que coincidan con ese filtro.</Text>
+          <Text style={styles.emptyText}>
+            Sin coincidencias para ese filtro.
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -125,9 +128,10 @@ export default function PokedexScreen() {
                 style={styles.card}
                 onPress={() => router.push(`/pokemon/${id}`)}
               >
-                <Text style={styles.cardText}>
-                  #{id} {item.name}
+                <Text style={styles.cardId}>
+                  #{String(id).padStart(3, "0")}
                 </Text>
+                <Text style={styles.cardText}>{item.name}</Text>
               </Pressable>
             );
           }}
@@ -135,7 +139,10 @@ export default function PokedexScreen() {
           onEndReachedThreshold={0.5}
           ListFooterComponent={
             !isFiltering && isLoadingList ? (
-              <ActivityIndicator style={{ margin: 16 }} />
+              <ActivityIndicator
+                style={{ margin: 16 }}
+                color={colors.screenLine}
+              />
             ) : null
           }
         />
@@ -156,51 +163,80 @@ export default function PokedexScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1 },
+  screen: { flex: 1, backgroundColor: colors.screenBg },
   filterBar: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 10,
     gap: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomWidth: 3,
+    borderBottomColor: colors.screenLine,
+    backgroundColor: colors.screenBgDark,
   },
   filterButton: {
-    backgroundColor: "#3498db",
+    backgroundColor: colors.shellPurple,
+    borderWidth: 2,
+    borderColor: colors.screenLine,
     paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 8,
+    paddingHorizontal: 12,
   },
-  filterButtonText: { color: "white", fontWeight: "600" },
+  filterButtonText: {
+    color: colors.white,
+    fontFamily: fonts.pixel,
+    fontSize: 9,
+  },
   activeFilterInfo: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
   },
-  activeFilterText: { flex: 1, color: "#333" },
-  clearLink: { color: "#c0392b", fontWeight: "600" },
+  activeFilterText: { flex: 1, color: colors.screenLine, fontWeight: "700" },
+  clearLink: { color: colors.danger, fontFamily: fonts.pixel, fontSize: 8 },
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 16,
   },
+  loadingText: {
+    fontFamily: fonts.pixel,
+    fontSize: 10,
+    color: colors.screenLine,
+    marginTop: 12,
+  },
   list: { padding: 12 },
   card: {
-    backgroundColor: "#f2f2f2",
-    padding: 16,
-    borderRadius: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: colors.white,
+    borderWidth: 2,
+    borderColor: colors.screenLine,
+    padding: 14,
     marginBottom: 8,
   },
-  cardText: { fontSize: 16, fontWeight: "600", textTransform: "capitalize" },
-  errorText: { color: "#c0392b", marginBottom: 12, textAlign: "center" },
+  cardId: { fontFamily: fonts.pixel, fontSize: 9, color: colors.screenLine },
+  cardText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: colors.black,
+    textTransform: "uppercase",
+  },
+  errorText: {
+    color: colors.danger,
+    marginBottom: 12,
+    textAlign: "center",
+    fontWeight: "600",
+  },
+  emptyText: { color: colors.screenLine, textAlign: "center" },
   retryButton: {
-    backgroundColor: "#3498db",
+    backgroundColor: colors.shellPurple,
+    borderWidth: 2,
+    borderColor: colors.screenLine,
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 8,
   },
-  retryText: { color: "white", fontWeight: "600" },
+  retryText: { color: colors.white, fontFamily: fonts.pixel, fontSize: 9 },
 });
